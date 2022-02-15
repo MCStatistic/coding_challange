@@ -1,6 +1,5 @@
 from src.data.make_dataset import DataProvider
 import pytest
-import numpy as np
 
 def test_DataProvider():
     with pytest.raises(ValueError):

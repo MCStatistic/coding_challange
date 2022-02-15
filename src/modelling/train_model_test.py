@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from src.modelling.train_model import ModelTrainer
 import pytest
 

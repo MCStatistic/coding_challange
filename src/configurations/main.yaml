@@ -4,11 +4,14 @@ data:
   seed: 'None'
   train_size: 5000
   test_size: 2000
-  validation_size: 100
+  validation_size: 1000
   min_value: 10
   max_value: 15
 train:
   model: 'RandomForest'
+  tune: True
+  k_fold: 2
+  n_iter: 10
 hyperparameters:
   LinearReg:
     copy_X: True

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ensurepip import bootstrap
 import logging
 import os
 import hydra
@@ -12,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 @hydra.main(config_path='configurations', config_name='main.yaml')
 def run_pipeline(config: DictConfig) -> None:
-
 
     logger.info('Configuration File:')
     logger.info(OmegaConf.to_yaml(config))
@@ -45,7 +45,10 @@ def run_pipeline(config: DictConfig) -> None:
     logger.info(f'\tMAPE: {round(100*mape, 2)}%')
     logger.info(f'\tMSE: {round(mse, 4)}')
     logger.info(f'\tRMSE: {round(rmse, 4)}')
-    logger.info(f'\rR^2: {round(r2, 4)}')
+
+    if config.train.tune:
+        model._tune_hyperparameters(k_fold=config.train.k_fold,
+                                    n_iter=config.train.n_iter)
 
     logger.info('Saving results in:')
     logger.info(f'\t{format(os.getcwd())}')

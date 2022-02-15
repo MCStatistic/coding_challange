@@ -1,6 +1,7 @@
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Lasso
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn import metrics
 import numpy as np
 from src.data.make_dataset import DataProvider
@@ -30,6 +31,9 @@ class ModelTrainer(DataProvider):
         # check if specified model is within the options above
         assert model in mod_options, f'{model} is not supported'
         assert model in params.keys(), f'No key for {model} within provided params'
+
+        # adding model type to object
+        self._model_type = model
 
         # creating model object with specified params
         if model == 'LinearReg':
@@ -77,7 +81,57 @@ class ModelTrainer(DataProvider):
         # returning fit
         return fit
 
-    # TODO: Hyperparameter tuning should be added as an additional option...
+    def _tune_hyperparameters(self, k_fold: int, n_iter: int):
+        # creating tuning grid based on model type
+        # could be created within main.py
+        # function represent illustrative example of possible usage
+        if self._model_type == 'RandomForest':
+            n_estimators = [int(x) for x in np.arange(start=100, stop=1000, step=200)]
+            bootstrap = [True, False]
+            max_depth = [int(x) for x in np.arange(start=10, stop=100, step=10)]
+            min_samples_split = [2, 3, 4, 5, 10]
+            min_samples_leaf = [1, 2, 3, 4, 5]
+            max_features = ['auto', 'sqrt', 'log2']
+            tune_grid = {
+                'n_estimators': n_estimators,
+                'bootstrap': bootstrap,
+                'max_depth': max_depth,
+                'min_samples_split': min_samples_split,
+                'min_samples_leaf': min_samples_leaf,
+                'max_features': max_features
+            }
+
+            cv = RandomizedSearchCV(estimator = self._model, param_distributions = tune_grid, 
+                                    n_iter = n_iter, cv = k_fold, verbose = 1)
+
+        elif self._model_type == 'LassoReg':
+            alpha = [float(x) for x in np.arange(start=0.1, stop=1.0, step=0.05)]
+            positive = [True, False]
+            max_iter = [int(x) for x in np.arange(start=100, stop=2000, step=200)]
+            selection = ['cyclic', 'random']
+            tune_grid = {
+                'alpha': alpha,
+                'max_iter': max_iter,
+                'positive': positive,
+                'selection': selection
+            }
+ 
+            cv = RandomizedSearchCV(estimator = self._model, param_distributions = tune_grid, 
+                                    n_iter = n_iter, cv = k_fold, verbose = 1)
+        if self._model_type == 'LinearReg':
+            logger.info('For LinearReg no tuning is supported')
+
+        else:
+            y_train = self._training[:, 0]
+            X_train = self._training[:, 1].reshape(-1, 1)
+            logger.info('Initialize Randomized Search on Hyperparameters')
+            cv_rslt = cv.fit(X_train, y_train)
+            # log best params
+            logger.info('Best Parameters:')
+            for param, value in cv_rslt.best_params_.items():
+                logger.info(f'\t{param} : {value}')
+            # returning result
+            return cv_rslt
 
     def _evaluate_model(self):
         X_test = self._test[:, 1].reshape(-1, 1)
@@ -110,5 +164,6 @@ class ModelTrainer(DataProvider):
         if field_name == 'test_data': return self._test
         if field_name == 'seed': return self._seed
         if field_name == 'model': return self._model
+        if field_name == 'model_type': return self._model_type
         if field_name == 'fit': return self._fit
         if field_name == 'metrics': return self._metrics
