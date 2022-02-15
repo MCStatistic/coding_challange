@@ -1,0 +1,6 @@
+defaults:
+  - override hydra/job_logging: default
+model:
+  date: '2022-02-15'
+  time: '20-11-58'
+  n_multirun: 'None'

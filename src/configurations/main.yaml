@@ -1,0 +1,35 @@
+defaults:
+  - override hydra/job_logging: default
+data:
+  seed: 'None'
+  train_size: 5000
+  test_size: 2000
+  validation_size: 100
+  min_value: 10
+  max_value: 15
+train:
+  model: 'RandomForest'
+hyperparameters:
+  LinearReg:
+    copy_X: True
+    fit_intercept: True
+    positive: False
+  RandomForest:
+    n_estimators: 100
+    min_samples_split: 2
+    min_samples_leaf: 1
+    min_weight_fraction_leaf: 0.0
+    max_features: 'auto'
+    min_impurity_decrease: 0.0
+    bootstrap: True
+    oob_score: False
+    verbose: 0
+    warm_start: False
+    ccp_alpha: 0.0
+  LassoReg:
+    alpha: 1.0
+    fit_intercept: True
+    max_iter: 1000
+    tol: 0.0001
+    positive: False
+    selection: cyclic
